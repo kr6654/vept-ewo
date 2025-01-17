@@ -22,8 +22,17 @@ def create_app(config_name='default'):
     login_manager.login_view = 'login'
 
     with app.app_context():
+        from models import User, EWO, EWOHistory, WhyWhyAnalysis, OilReport, OilConsumption
         db.create_all()
-    
+
+        @login_manager.user_loader
+        def load_user(user_id):
+            return User.query.get(int(user_id))
+
+
+        from routes import register_routes
+        register_routes(app)
+
     return app
 
 app = create_app(os.getenv('FLASK_ENV', 'default'))
