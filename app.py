@@ -6,23 +6,27 @@ from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 from io import BytesIO, StringIO
 import os
+from config import config
 
 # Initialize extensions
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-# Initialize Flask app with proper context
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///ewo.db')
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def create_app(config_name='default'):
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
 
-# Initialize extensions with app
-db.init_app(app)
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+    # Initialize extensions with app
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+
+    with app.app_context():
+        db.create_all()
+    
+    return app
+
+app = create_app(os.getenv('FLASK_ENV', 'default'))
 
 # Enable CORS for all routes
 @app.after_request
@@ -924,6 +928,4 @@ def get_redirect_target(role):
     return role_routes.get(role, 'login')
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
