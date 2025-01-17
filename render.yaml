@@ -7,3 +7,12 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        value: R7TF8PT5z1zrCBe7aQDMZWa6serv2dL3adUPu-3-CtE
+
+  - type: postgres
+    name: ewo-db
+    ipAllowList: []
+    plan: free
