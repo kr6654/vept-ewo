@@ -6,23 +6,27 @@ from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 from io import BytesIO, StringIO
 import os
-
-# Initialize Flask app with proper context
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///ewo.db')
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+from config import config
 
 # Initialize extensions
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 login_manager = LoginManager()
 
-# Initialize extensions with app
-db.init_app(app)
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+def create_app(config_name='default'):
+    app = Flask(__name__)
+    app.config.from_object(config[config_name])
+
+    # Initialize extensions with app
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+
+    with app.app_context():
+        db.create_all()
+    
+    return app
+
+app = create_app(os.getenv('FLASK_ENV', 'default'))
 
 # Enable CORS for all routes
 @app.after_request
@@ -784,58 +788,6 @@ def export_oil_data():
         flash(f'Error exporting oil data: {str(e)}', 'danger')
         return redirect(url_for('admin_dashboard'))
 
-@app.route('/api/ewo/<int:ewo_id>')
-@login_required
-def get_ewo_details(ewo_id):
-    if not current_user.is_admin_or_administrator():
-        return jsonify({'error': 'Unauthorized access'}), 403
-    
-    ewo = EWO.query.get_or_404(ewo_id)
-    creator = User.query.get(ewo.created_by)
-    resolver = User.query.get(ewo.resolved_by) if ewo.resolved_by else None
-    verifier = User.query.get(ewo.verified_by) if ewo.verified_by else None
-    
-    return jsonify({
-        'id': ewo.id,
-        'line': ewo.line,
-        'operation_number': ewo.operation_number,
-        'shift': ewo.shift,
-        'breakdown_description': ewo.breakdown_description,
-        'created_by': creator.full_name if creator else '',
-        'created_at': ewo.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'status': ewo.status,
-        'resolved_by': resolver.full_name if resolver else '',
-        'resolved_at': ewo.resolved_at.strftime('%Y-%m-%d %H:%M:%S') if ewo.resolved_at else '',
-        'resolution_description': ewo.resolution_description or '',
-        'verified_by': verifier.full_name if verifier else '',
-        'verified_at': ewo.verified_at.strftime('%Y-%m-%d %H:%M:%S') if ewo.verified_at else ''
-    })
-
-@app.route('/api/oil_report/<int:report_id>')
-@login_required
-def get_oil_report_details(report_id):
-    if not current_user.is_admin_or_administrator():
-        return jsonify({'error': 'Unauthorized access'}), 403
-    
-    report = OilReport.query.get_or_404(report_id)
-    creator = User.query.get(report.created_by)
-    
-    return jsonify({
-        'id': report.id,
-        'date': report.date.strftime('%Y-%m-%d'),
-        'shift': report.shift,
-        'created_by_name': creator.full_name if creator else '',
-        'grade_32_barrel': report.grade_32_barrel,
-        'grade_46_barrel': report.grade_46_barrel,
-        'grade_68_barrel': report.grade_68_barrel,
-        'grade_32_open': report.grade_32_open,
-        'grade_46_open': report.grade_46_open,
-        'grade_68_open': report.grade_68_open,
-        'grade_32_trolley': report.grade_32_trolley,
-        'grade_46_trolley': report.grade_46_trolley,
-        'grade_68_trolley': report.grade_68_trolley
-    })
-
 @app.route('/export_oil_consumption', methods=['POST'])
 @login_required
 def export_oil_consumption():
@@ -913,6 +865,58 @@ def export_oil_consumption():
         flash(f'Error exporting oil consumption data: {str(e)}', 'danger')
         return redirect(url_for('admin_dashboard'))
 
+@app.route('/api/ewo/<int:ewo_id>')
+@login_required
+def get_ewo_details(ewo_id):
+    if not current_user.is_admin_or_administrator():
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    ewo = EWO.query.get_or_404(ewo_id)
+    creator = User.query.get(ewo.created_by)
+    resolver = User.query.get(ewo.resolved_by) if ewo.resolved_by else None
+    verifier = User.query.get(ewo.verified_by) if ewo.verified_by else None
+    
+    return jsonify({
+        'id': ewo.id,
+        'line': ewo.line,
+        'operation_number': ewo.operation_number,
+        'shift': ewo.shift,
+        'breakdown_description': ewo.breakdown_description,
+        'created_by': creator.full_name if creator else '',
+        'created_at': ewo.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'status': ewo.status,
+        'resolved_by': resolver.full_name if resolver else '',
+        'resolved_at': ewo.resolved_at.strftime('%Y-%m-%d %H:%M:%S') if ewo.resolved_at else '',
+        'resolution_description': ewo.resolution_description or '',
+        'verified_by': verifier.full_name if verifier else '',
+        'verified_at': ewo.verified_at.strftime('%Y-%m-%d %H:%M:%S') if ewo.verified_at else ''
+    })
+
+@app.route('/api/oil_report/<int:report_id>')
+@login_required
+def get_oil_report_details(report_id):
+    if not current_user.is_admin_or_administrator():
+        return jsonify({'error': 'Unauthorized access'}), 403
+    
+    report = OilReport.query.get_or_404(report_id)
+    creator = User.query.get(report.created_by)
+    
+    return jsonify({
+        'id': report.id,
+        'date': report.date.strftime('%Y-%m-%d'),
+        'shift': report.shift,
+        'created_by_name': creator.full_name if creator else '',
+        'grade_32_barrel': report.grade_32_barrel,
+        'grade_46_barrel': report.grade_46_barrel,
+        'grade_68_barrel': report.grade_68_barrel,
+        'grade_32_open': report.grade_32_open,
+        'grade_46_open': report.grade_46_open,
+        'grade_68_open': report.grade_68_open,
+        'grade_32_trolley': report.grade_32_trolley,
+        'grade_46_trolley': report.grade_46_trolley,
+        'grade_68_trolley': report.grade_68_trolley
+    })
+
 def get_redirect_target(role):
     role_routes = {
         'production': 'production_dashboard',
@@ -924,6 +928,4 @@ def get_redirect_target(role):
     return role_routes.get(role, 'login')
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
