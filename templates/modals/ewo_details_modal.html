@@ -1,0 +1,88 @@
+<!-- EWO Details Modal -->
+<div class="modal fade" id="ewoDetailsModal" tabindex="-1" aria-labelledby="ewoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ewoModalLabel">EWO Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Line:</strong> <span id="ewoLine"></span></p>
+                        <p><strong>Operation:</strong> <span id="ewoOperation"></span></p>
+                        <p><strong>Shift:</strong> <span id="ewoShift"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> <span id="ewoStatus"></span></p>
+                        <p><strong>Created By:</strong> <span id="ewoCreatedBy"></span></p>
+                        <p><strong>Created At:</strong> <span id="ewoCreatedAt"></span></p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Breakdown Description:</h6>
+                    <p id="ewoDescription"></p>
+                </div>
+                
+                <div class="mb-3 resolution-details">
+                    <h6>Resolution Details:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Resolved By:</strong> <span id="ewoResolvedBy"></span></p>
+                            <p><strong>Resolved At:</strong> <span id="ewoResolvedAt"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Verified By:</strong> <span id="ewoVerifiedBy"></span></p>
+                            <p><strong>Verified At:</strong> <span id="ewoVerifiedAt"></span></p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <h6>Resolution Description:</h6>
+                        <p id="ewoResolution"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewEWO(id) {
+    // Make an AJAX call to get EWO details
+    fetch(`/api/ewo/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update modal content
+            document.getElementById('ewoLine').textContent = data.line;
+            document.getElementById('ewoOperation').textContent = data.operation_number;
+            document.getElementById('ewoShift').textContent = data.shift;
+            document.getElementById('ewoStatus').textContent = data.status;
+            document.getElementById('ewoCreatedBy').textContent = data.created_by_name;
+            document.getElementById('ewoCreatedAt').textContent = new Date(data.created_at).toLocaleString();
+            document.getElementById('ewoDescription').textContent = data.breakdown_description;
+
+            // Show/hide resolution section
+            if (data.resolution) {
+                document.querySelector('.resolution-details').style.display = 'block';
+                document.getElementById('ewoResolvedBy').textContent = data.resolved_by_name;
+                document.getElementById('ewoResolvedAt').textContent = new Date(data.resolved_at).toLocaleString();
+                document.getElementById('ewoVerifiedBy').textContent = data.verified_by_name;
+                document.getElementById('ewoVerifiedAt').textContent = new Date(data.verified_at).toLocaleString();
+                document.getElementById('ewoResolution').textContent = data.resolution;
+            } else {
+                document.querySelector('.resolution-details').style.display = 'none';
+            }
+
+            // Show the modal
+            new bootstrap.Modal(document.getElementById('ewoDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load EWO details');
+        });
+}
+</script>

@@ -1,0 +1,46 @@
+<!-- Export Oil Consumption Modal -->
+<div class="modal fade" id="exportConsumptionModal" tabindex="-1" aria-labelledby="exportConsumptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportConsumptionModalLabel">Export Machine Oil Consumption</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('export_oil_consumption') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="consumption_start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="consumption_start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="consumption_end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="consumption_end_date" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="consumption_format" class="form-label">Export Format</label>
+                        <select class="form-select" id="consumption_format" name="format" required>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates for consumption export
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    document.getElementById('consumption_start_date').value = thirtyDaysAgo.toISOString().split('T')[0];
+    document.getElementById('consumption_end_date').value = today.toISOString().split('T')[0];
+});
+</script>

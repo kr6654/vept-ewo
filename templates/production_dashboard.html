@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Production Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h4>Create New EWO</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_ewo') }}">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Line</label>
+                            <select class="form-select" name="line" required>
+                                <option value="CB">CB</option>
+                                <option value="CH">CH</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Operation Number</label>
+                            <input type="text" class="form-control" name="operation_number" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Shift</label>
+                            <select class="form-select" name="shift" required>
+                                <option value="">Select Shift</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="A+B">A+B</option>
+                                <option value="B+C">B+C</option>
+                                <option value="A+B+C">A+B+C</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Breakdown Description</label>
+                        <textarea class="form-control" name="breakdown_description" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create EWO</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#open">Open EWOs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#resolved">Resolved EWOs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#verified">Verified/Rejected EWOs</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="open">
+                <h4>Open EWOs</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Line</th>
+                                <th>Operation</th>
+                                <th>Shift</th>
+                                <th>Description</th>
+                                <th>Created At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ewo in ewos if ewo.status == 'open' %}
+                            <tr>
+                                <td>{{ ewo.id }}</td>
+                                <td>{{ ewo.line }}</td>
+                                <td>{{ ewo.operation_number }}</td>
+                                <td>{{ ewo.shift }}</td>
+                                <td>{{ ewo.breakdown_description }}</td>
+                                <td>{{ ewo.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="resolved">
+                <h4>Resolved EWOs (Pending Verification)</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Line</th>
+                                <th>Operation</th>
+                                <th>Shift</th>
+                                <th>Description</th>
+                                <th>Resolution</th>
+                                <th>Resolved At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ewo in ewos if ewo.status == 'resolved' %}
+                            <tr class="table-info">
+                                <td>{{ ewo.id }}</td>
+                                <td>{{ ewo.line }}</td>
+                                <td>{{ ewo.operation_number }}</td>
+                                <td>{{ ewo.shift }}</td>
+                                <td>{{ ewo.breakdown_description }}</td>
+                                <td>{{ ewo.resolution_description }}</td>
+                                <td>{{ ewo.resolved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('verify_ewo', ewo_id=ewo.id) }}" class="d-inline">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control form-control-sm" name="verification_comment" placeholder="Comment" required>
+                                            <button type="submit" name="action" value="verify" class="btn btn-success btn-sm">Verify</button>
+                                            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="verified">
+                <h4>Verified/Rejected EWOs</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Line</th>
+                                <th>Operation</th>
+                                <th>Shift</th>
+                                <th>Description</th>
+                                <th>Resolution</th>
+                                <th>Status</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ewo in ewos if ewo.status == 'verified' or ewo.status == 'rejected' %}
+                            <tr class="{{ 'table-success' if ewo.status == 'verified' else 'table-danger' }}">
+                                <td>{{ ewo.id }}</td>
+                                <td>{{ ewo.line }}</td>
+                                <td>{{ ewo.operation_number }}</td>
+                                <td>{{ ewo.shift }}</td>
+                                <td>{{ ewo.breakdown_description }}</td>
+                                <td>{{ ewo.resolution_description }}</td>
+                                <td>{{ ewo.status.title() }}</td>
+                                <td>{{ ewo.verification_comment }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

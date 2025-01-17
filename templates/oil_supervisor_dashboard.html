@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Oil Supervisor Dashboard</h2>
+
+<!-- Oil Report Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Add Oil Report</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('add_oil_report') }}" method="POST">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Shift</label>
+                    <select class="form-select" name="shift" required>
+                        <option value="">Select Shift</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <h5>Barrel Stock</h5>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 32</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_32_barrel" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 46</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_46_barrel" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 68</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_68_barrel" required>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Open Stock</h5>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 32</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_32_open" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 46</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_46_open" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 68</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_68_open" required>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Trolley Stock</h5>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 32</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_32_trolley" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 46</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_46_trolley" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Grade 68</label>
+                        <input type="number" step="0.01" class="form-control" name="grade_68_trolley" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Submit Report</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Oil Consumption Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Add Oil Consumption</h4>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('add_oil_consumption') }}" method="POST">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Shift</label>
+                    <select class="form-select" name="shift" required>
+                        <option value="">Select Shift</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="A+B">A+B</option>
+                        <option value="B+C">B+C</option>
+                        <option value="A+B+C">A+B+C</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Machine Name</label>
+                    <input type="text" class="form-control" name="machine_name" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Oil Grade</label>
+                    <select class="form-select" name="oil_grade" required>
+                        <option value="">Select Grade</option>
+                        <option value="32">32</option>
+                        <option value="46">46</option>
+                        <option value="68">68</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Quantity (Liters)</label>
+                    <input type="number" step="0.01" class="form-control" name="quantity_liters" required>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Add Consumption</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reports Table -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4>Recent Oil Reports</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Grade 32 Barrel</th>
+                        <th>Grade 46 Barrel</th>
+                        <th>Grade 68 Barrel</th>
+                        <th>Grade 32 Open</th>
+                        <th>Grade 46 Open</th>
+                        <th>Grade 68 Open</th>
+                        <th>Grade 32 Trolley</th>
+                        <th>Grade 46 Trolley</th>
+                        <th>Grade 68 Trolley</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in oil_reports %}
+                    <tr>
+                        <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ report.shift }}</td>
+                        <td>{{ report.grade_32_barrel }}</td>
+                        <td>{{ report.grade_46_barrel }}</td>
+                        <td>{{ report.grade_68_barrel }}</td>
+                        <td>{{ report.grade_32_open }}</td>
+                        <td>{{ report.grade_46_open }}</td>
+                        <td>{{ report.grade_68_open }}</td>
+                        <td>{{ report.grade_32_trolley }}</td>
+                        <td>{{ report.grade_46_trolley }}</td>
+                        <td>{{ report.grade_68_trolley }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Consumption Table -->
+<div class="card">
+    <div class="card-header">
+        <h4>Recent Oil Consumption</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Shift</th>
+                        <th>Machine</th>
+                        <th>Grade</th>
+                        <th>Quantity (L)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for consumption in oil_consumptions %}
+                    <tr>
+                        <td>{{ consumption.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ consumption.shift }}</td>
+                        <td>{{ consumption.machine_name }}</td>
+                        <td>{{ consumption.oil_grade }}</td>
+                        <td>{{ consumption.quantity_liters }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

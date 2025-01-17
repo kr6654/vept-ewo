@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Maintenance Dashboard</h2>
+
+<div class="row">
+    <div class="col">
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#open">Open EWOs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#rejected">Rejected EWOs</a>
+            </li>
+        </ul>
+        
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="open">
+                <h4>Open EWOs</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Line</th>
+                                <th>Operation</th>
+                                <th>Shift</th>
+                                <th>Description</th>
+                                <th>Created At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ewo in ewos if ewo.status == 'open' %}
+                            <tr>
+                                <td>{{ ewo.id }}</td>
+                                <td>{{ ewo.line }}</td>
+                                <td>{{ ewo.operation_number }}</td>
+                                <td>{{ ewo.shift }}</td>
+                                <td>{{ ewo.breakdown_description }}</td>
+                                <td>{{ ewo.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#resolveModal{{ ewo.id }}">
+                                        Resolve
+                                    </button>
+                                    
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="resolveModal{{ ewo.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Resolve EWO #{{ ewo.id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST" action="{{ url_for('resolve_ewo', ewo_id=ewo.id) }}">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Resolution Description</label>
+                                                            <textarea class="form-control" name="resolution_description" rows="3" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit Resolution</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="rejected">
+                <h4>Rejected EWOs</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Line</th>
+                                <th>Operation</th>
+                                <th>Shift</th>
+                                <th>Description</th>
+                                <th>Previous Resolution</th>
+                                <th>Rejection Comment</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ewo in ewos if ewo.status == 'rejected' %}
+                            <tr class="table-danger">
+                                <td>{{ ewo.id }}</td>
+                                <td>{{ ewo.line }}</td>
+                                <td>{{ ewo.operation_number }}</td>
+                                <td>{{ ewo.shift }}</td>
+                                <td>{{ ewo.breakdown_description }}</td>
+                                <td>{{ ewo.resolution_description }}</td>
+                                <td>{{ ewo.verification_comment }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#resolveModal{{ ewo.id }}">
+                                        Resolve Again
+                                    </button>
+                                    
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="resolveModal{{ ewo.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Resolve EWO #{{ ewo.id }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form method="POST" action="{{ url_for('resolve_ewo', ewo_id=ewo.id) }}">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Resolution Description</label>
+                                                            <textarea class="form-control" name="resolution_description" rows="3" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit Resolution</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

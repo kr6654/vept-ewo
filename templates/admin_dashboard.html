@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <button class="btn btn-primary w-100 h-100 py-3" data-bs-toggle="modal" data-bs-target="#newEWOModal">
+                <i class="fas fa-plus-circle mb-2"></i>
+                <span class="d-block">New EWO</span>
+            </button>
+        </div>
+        <div class="col-6">
+            <button class="btn btn-success w-100 h-100 py-3" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="fas fa-file-export mb-2"></i>
+                <span class="d-block">Export</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="accordion" id="adminAccordion">
+        <!-- Pending Users Section -->
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#pendingUsersSection">
+                    <i class="fas fa-user-clock me-2"></i> Pending Users
+                    {% if pending_users %}
+                    <span class="badge bg-danger ms-2">{{ pending_users|length }}</span>
+                    {% endif %}
+                </button>
+            </h2>
+            <div id="pendingUsersSection" class="accordion-collapse collapse show">
+                <div class="accordion-body p-0">
+                    {% if pending_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in pending_users %}
+                                <tr>
+                                    <td>{{ user.full_name }}</td>
+                                    <td>{{ user.role }}</td>
+                                    <td>
+                                        <form action="{{ url_for('approve_user', user_id=user.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('reject_user', user_id=user.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted mb-0">No pending users</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending EWOs Section -->
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#pendingEWOsSection">
+                    <i class="fas fa-clock me-2"></i> Pending EWOs
+                    {% if pending_ewos %}
+                    <span class="badge bg-warning ms-2">{{ pending_ewos|length }}</span>
+                    {% endif %}
+                </button>
+            </h2>
+            <div id="pendingEWOsSection" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Line</th>
+                                    <th>Operation</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ewo in pending_ewos %}
+                                <tr>
+                                    <td>{{ ewo.id }}</td>
+                                    <td>{{ ewo.line }}</td>
+                                    <td>{{ ewo.operation_number }}</td>
+                                    <td>{{ ewo.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        {% if not ewo.is_approved %}
+                                        <span class="badge bg-danger">Unapproved</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" onclick="viewEWO({{ ewo.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if not ewo.is_approved %}
+                                        <form action="{{ url_for('approve_ewo', ewo_id=ewo.id) }}" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <a href="{{ url_for('why_why_analysis', ewo_id=ewo.id) }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-question-circle"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed EWOs Section -->
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#completedEWOsSection">
+                    <i class="fas fa-check-circle me-2"></i> Completed EWOs
+                </button>
+            </h2>
+            <div id="completedEWOsSection" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Line</th>
+                                    <th>Operation</th>
+                                    <th>Completed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ewo in completed_ewos %}
+                                <tr>
+                                    <td>{{ ewo.id }}</td>
+                                    <td>{{ ewo.line }}</td>
+                                    <td>{{ ewo.operation_number }}</td>
+                                    <td>{{ ewo.resolved_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button class="btn btn-info btn-sm" onclick="viewEWO({{ ewo.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if not ewo.why_why_analysis %}
+                                        <a href="{{ url_for('why_why_analysis', ewo_id=ewo.id) }}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-question-circle"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oil Reports Section -->
+        <div class="accordion-item mb-3">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#oilReportsSection">
+                    <i class="fas fa-oil-can me-2"></i> Oil Reports
+                </button>
+            </h2>
+            <div id="oilReportsSection" class="accordion-collapse collapse">
+                <div class="accordion-body p-0">
+                    <div class="d-flex justify-content-end p-2">
+                        <button class="btn btn-success btn-sm me-2" data-bs-toggle="modal" data-bs-target="#exportOilModal">
+                            <i class="fas fa-file-export me-1"></i> Export Oil Stock
+                        </button>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#exportConsumptionModal">
+                            <i class="fas fa-file-export me-1"></i> Export Consumption
+                        </button>
+                    </div>
+                    <ul class="nav nav-tabs" id="oilTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="stock-tab" data-bs-toggle="tab" data-bs-target="#stock" type="button" role="tab">
+                                Oil Stock
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="consumption-tab" data-bs-toggle="tab" data-bs-target="#consumption" type="button" role="tab">
+                                Machine Consumption
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="oilTabContent">
+                        <div class="tab-pane fade show active" id="stock" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Shift</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for report in oil_reports %}
+                                        <tr>
+                                            <td>{{ report.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ report.shift }}</td>
+                                            <td>
+                                                <button class="btn btn-info btn-sm" onclick="viewOilReport({{ report.id }})">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="consumption" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Shift</th>
+                                            <th>Machine</th>
+                                            <th>Grade</th>
+                                            <th>Quantity (L)</th>
+                                            <th>Added By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for consumption in oil_consumption %}
+                                        <tr>
+                                            <td>{{ consumption.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ consumption.shift }}</td>
+                                            <td>{{ consumption.machine_name }}</td>
+                                            <td>{{ consumption.oil_grade }}</td>
+                                            <td>{{ consumption.quantity_liters }}</td>
+                                            <td>{{ consumption.creator.full_name if consumption.creator else '' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Modals -->
+{% include 'modals/new_ewo_modal.html' %}
+{% include 'modals/export_modal.html' %}
+{% include 'modals/ewo_details_modal.html' %}
+{% include 'modals/oil_report_modal.html' %}
+{% include 'modals/export_oil_modal.html' %}
+{% include 'modals/export_consumption_modal.html' %}
+
+<script>
+// View EWO details
+function viewEWO(id) {
+    fetch(`/api/ewo/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            // Update modal content
+            document.getElementById('ewoModalLabel').textContent = `EWO #${data.id} Details`;
+            document.getElementById('ewoLine').textContent = data.line;
+            document.getElementById('ewoOperation').textContent = data.operation_number;
+            document.getElementById('ewoShift').textContent = data.shift;
+            document.getElementById('ewoDescription').textContent = data.breakdown_description;
+            document.getElementById('ewoCreatedBy').textContent = data.created_by;
+            document.getElementById('ewoCreatedAt').textContent = data.created_at;
+            document.getElementById('ewoStatus').textContent = data.status;
+            
+            if (data.resolved_by) {
+                document.getElementById('ewoResolvedBy').textContent = data.resolved_by;
+                document.getElementById('ewoResolvedAt').textContent = data.resolved_at;
+                document.getElementById('ewoResolution').textContent = data.resolution_description;
+            }
+            
+            if (data.verified_by) {
+                document.getElementById('ewoVerifiedBy').textContent = data.verified_by;
+                document.getElementById('ewoVerifiedAt').textContent = data.verified_at;
+            }
+            
+            // Show the modal
+            new bootstrap.Modal(document.getElementById('ewoDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load EWO details: ' + error.message);
+        });
+}
+
+// View Oil Report details
+function viewOilReport(id) {
+    fetch(`/api/oil_report/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            // Update modal content
+            document.getElementById('oilReportDate').textContent = data.date;
+            document.getElementById('oilReportShift').textContent = data.shift;
+            document.getElementById('oilReportCreatedBy').textContent = data.created_by_name;
+            
+            // Update barrel stock
+            document.getElementById('grade32Barrel').textContent = data.grade_32_barrel;
+            document.getElementById('grade46Barrel').textContent = data.grade_46_barrel;
+            document.getElementById('grade68Barrel').textContent = data.grade_68_barrel;
+            
+            // Update open stock
+            document.getElementById('grade32Open').textContent = data.grade_32_open;
+            document.getElementById('grade46Open').textContent = data.grade_46_open;
+            document.getElementById('grade68Open').textContent = data.grade_68_open;
+            
+            // Update trolley stock
+            document.getElementById('grade32Trolley').textContent = data.grade_32_trolley;
+            document.getElementById('grade46Trolley').textContent = data.grade_46_trolley;
+            document.getElementById('grade68Trolley').textContent = data.grade_68_trolley;
+            
+            // Show the modal
+            new bootstrap.Modal(document.getElementById('oilReportModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load Oil Report details: ' + error.message);
+        });
+}
+</script>
+
+{% endblock %}

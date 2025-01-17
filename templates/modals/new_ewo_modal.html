@@ -1,0 +1,47 @@
+<!-- New EWO Modal -->
+<div class="modal fade" id="newEWOModal" tabindex="-1" aria-labelledby="newEWOModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newEWOModalLabel">Create New EWO</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('create_ewo') }}" method="POST" id="newEWOForm">
+                    <div class="mb-3">
+                        <label for="line" class="form-label">Line</label>
+                        <select class="form-select" id="line" name="line" required>
+                            <option value="">Select Line</option>
+                            <option value="CB">CB</option>
+                            <option value="CH">CH</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="operation_number" class="form-label">Operation Number</label>
+                        <input type="text" class="form-control" id="operation_number" name="operation_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="shift" class="form-label">Shift</label>
+                        <select class="form-select" id="shift" name="shift" required>
+                            <option value="">Select Shift</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="A+B">A+B</option>
+                            <option value="B+C">B+C</option>
+                            <option value="A+B+C">A+B+C</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="breakdown_description" class="form-label">Breakdown Description</label>
+                        <textarea class="form-control" id="breakdown_description" name="breakdown_description" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create EWO</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

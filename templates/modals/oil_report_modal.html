@@ -1,0 +1,146 @@
+<!-- Oil Report Details Modal -->
+<div class="modal fade" id="oilReportModal" tabindex="-1" aria-labelledby="oilReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="oilReportModalLabel">Oil Report Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Date:</strong> <span id="oilReportDate"></span></p>
+                        <p><strong>Shift:</strong> <span id="oilReportShift"></span></p>
+                        <p><strong>Created By:</strong> <span id="oilReportCreatedBy"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Barrel Stock -->
+                <div class="mt-4">
+                    <h6>Barrel Stock</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Grade</th>
+                                    <th>Quantity (Barrels)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Grade 32</td>
+                                    <td id="grade32Barrel"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 46</td>
+                                    <td id="grade46Barrel"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 68</td>
+                                    <td id="grade68Barrel"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Open Stock -->
+                <div class="mt-4">
+                    <h6>Open Stock</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Grade</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Grade 32</td>
+                                    <td id="grade32Open"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 46</td>
+                                    <td id="grade46Open"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 68</td>
+                                    <td id="grade68Open"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Trolley Stock -->
+                <div class="mt-4">
+                    <h6>Trolley Stock</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Grade</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Grade 32</td>
+                                    <td id="grade32Trolley"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 46</td>
+                                    <td id="grade46Trolley"></td>
+                                </tr>
+                                <tr>
+                                    <td>Grade 68</td>
+                                    <td id="grade68Trolley"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewOilReport(id) {
+    // Make an AJAX call to get Oil Report details
+    fetch(`/api/oil_report/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            // Update modal content
+            document.getElementById('oilReportDate').textContent = new Date(data.date).toLocaleDateString();
+            document.getElementById('oilReportShift').textContent = data.shift;
+            document.getElementById('oilReportCreatedBy').textContent = data.created_by_name;
+            
+            // Update barrel stock
+            document.getElementById('grade32Barrel').textContent = data.grade_32_barrel;
+            document.getElementById('grade46Barrel').textContent = data.grade_46_barrel;
+            document.getElementById('grade68Barrel').textContent = data.grade_68_barrel;
+            
+            // Update open stock
+            document.getElementById('grade32Open').textContent = data.grade_32_open;
+            document.getElementById('grade46Open').textContent = data.grade_46_open;
+            document.getElementById('grade68Open').textContent = data.grade_68_open;
+            
+            // Update trolley stock
+            document.getElementById('grade32Trolley').textContent = data.grade_32_trolley;
+            document.getElementById('grade46Trolley').textContent = data.grade_46_trolley;
+            document.getElementById('grade68Trolley').textContent = data.grade_68_trolley;
+
+            // Show the modal
+            new bootstrap.Modal(document.getElementById('oilReportModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load Oil Report details');
+        });
+}
+</script>
